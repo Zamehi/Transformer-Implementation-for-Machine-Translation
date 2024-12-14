@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Translation ChatBot</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        background-image: url("static/bd_8.jpg");
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+        z-index: 0; /* Behind everything */
+      }
+
+      .blur-container {
+        position: relative;
+        height: 100%; /* Fill the entire viewport */
+        backdrop-filter: blur(10px); /* Adjust blur strength */
+        z-index: 1; /* Above the background */
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+
+      .conversation {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        background: #f4f4f4;
+      }
+
+      .message {
+        display: flex;
+        margin: 10px 0;
+      }
+
+      .message.left {
+        justify-content: flex-start;
+      }
+
+      .message.right {
+        justify-content: flex-end;
+      }
+
+      .message .bubble {
+        max-width: 70%;
+        padding: 10px;
+        border-radius: 10px;
+      }
+
+      .message .left .bubble {
+        background: #e9f5ff;
+        text-align: left;
+      }
+
+      .message .right .bubble {
+        background: #d4edda;
+        text-align: right;
+      }
+
+      input[type="text"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>English to Urdu Translation ChatBot</h1>
+      <div class="conversation" id="conversation"></div>
+      <input
+        type="text"
+        id="english-text"
+        placeholder="Enter English text"
+        required
+      />
+      <button id="translate-btn">Translate</button>
+    </div>
+
+    <script>
+      const conversationDiv = document.getElementById("conversation");
+      const englishTextInput = document.getElementById("english-text");
+      const translateBtn = document.getElementById("translate-btn");
+
+      translateBtn.addEventListener("click", async () => {
+        const englishText = englishTextInput.value.trim();
+        if (!englishText) return;
+
+        try {
+          const response = await fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ english_text: englishText }),
+          });
+
+          const data = await response.json();
+          if (data.error) {
+            alert(data.error);
+            return;
+          }
+
+          const newSourceMessage = document.createElement("div");
+          newSourceMessage.className = "message left";
+          newSourceMessage.innerHTML = `<div class="bubble">${englishText}</div>`;
+
+          const newTargetMessage = document.createElement("div");
+          newTargetMessage.className = "message right";
+          newTargetMessage.innerHTML = `<div class="bubble">${data.translation}</div>`;
+
+          conversationDiv.appendChild(newSourceMessage);
+          conversationDiv.appendChild(newTargetMessage);
+
+          conversationDiv.scrollTop = conversationDiv.scrollHeight;
+
+          englishTextInput.value = "";
+        } catch (error) {
+          alert("Translation failed. Try again.");
+        }
+      });
+    </script>
+  </body>
+</html>
